@@ -19,6 +19,8 @@
               <v-btn v-if="isCorrectChain" icon @click="mintAmount = (mintAmount == maxMintPerTx) ? mintAmount : mintAmount+1; newMintingCost = mintAmount * mintingCost;"><v-icon>mdi-plus-circle</v-icon></v-btn>
               <br>
               <v-btn v-if="isCorrectChain && (mintingCost != null) && (currentSupply != 0) && (maxSupply != 0) && (maxMintPerTx != 0)" class="my-3" @click="mint()">MINT</v-btn>
+              <v-btn v-if="isCorrectChain && (mintingCost != null) && (currentSupply != 0) && (maxSupply != 0) && (maxMintPerTx != 0)" class="my-3" @click="setCost()">SET COST</v-btn>
+
               <a v-if="mintTransaction" :href='(chainId == "0x4") ? `https://rinkeby.etherscan.io/tx/${mintTransaction.hash}` : `https://polygonscan.io/tx/${mintTransaction.hash}`'>{{mintTransaction.hash}}</a>
             </v-col>
           </v-card-text>
@@ -33,7 +35,6 @@ import Moralis from 'moralis';
 import { myContractAddress, ABI } from '../constants/contract';
 import { getEllipsisTxt, tokenValue } from '../helpers/formatters.js';
 // import Web3 from "web3";
-
 const serverUrl = process.env.VUE_APP_MORALIS_SERVER_URL;
 const appId =  process.env.VUE_APP_MORALIS_APPLICATION_ID;
 Moralis.start({ serverUrl, appId });
@@ -56,6 +57,11 @@ export default {
     mintAmount: 1,
     maxMintPerTx: 0,
     mintTransaction: null,
+    // sampleCost:1000000000000000,
+    sampleCost:1,
+    sampleMintCount:2000000000000000000,
+    // sampleMintCount:1,
+
   }),
 
   methods: {
@@ -139,21 +145,48 @@ export default {
     },
 
     async mint(){
-
+        console.log("mintamount",this.mintAmount);
+        console.log("typeof",typeof this.mintAmount);
+        // const bimintAmount = BigInt(this.mintAmount);
         let sendOptions = {
           contractAddress: myContractAddress,
           functionName: "mint",
           abi: ABI,
+           gas: '300000',
           params: {
+             mint:"",
             _mintAmount: this.mintAmount
           },
+          msgValue: this.mintAmount,
         };
         this.mintTransaction = await Moralis.executeFunction(sendOptions);
         console.log(this.mintTransaction.hash);
         let result = await this.mintTransaction.wait();
         console.log(result);
 
+        // const transaction = await Moralis.executeFunction(sendOptions);
+        // await transaction.wait();
+        // const message = await Moralis.executeFunction(sendOptions);
+        // console.log(message);
+        // const receipt = await transaction.wait(3)
+        // console.log(receipt);
+
     },
+    async setCost() {
+      let sendOptions = {
+          contractAddress: myContractAddress,
+          functionName: "setCost",
+          abi: ABI,
+          params: {
+            _cost: this.sampleCost
+          },
+        };
+
+         const transaction = await Moralis.executeFunction(sendOptions);
+        await transaction.wait();
+        const message = await Moralis.executeFunction(sendOptions);
+        console.log(message);
+    }
 
   },
 
@@ -163,6 +196,8 @@ export default {
 
   created(){
     this.init();
+    console.log("wallet address",this.walletAddress);
+    
   },
 
   computed: {
