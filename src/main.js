@@ -6,7 +6,9 @@ import AsyncComputed from 'vue-async-computed'
 /* Initialize the plugin */
 Vue.use(AsyncComputed)
  
-Vue.config.productionTip = false
+Vue.config.productionTip = false;
+
+window.Buffer = window.Buffer || require('buffer').Buffer;
 
 new Vue({
   vuetify,
